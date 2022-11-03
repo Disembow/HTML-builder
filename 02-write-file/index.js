@@ -8,7 +8,7 @@ const writableStream = fs.createWriteStream(path.join(__dirname, 'message.txt'),
 stdout.write('Please, enter your message\n');
 stdin.on('data', data => {
   if (data.toString().trim() === 'exit') {
-    stdout.write('Удачи в изучении Node.js!')
+    stdout.write('Good luck finding Node.js!')
     process.exit();
   }
   stdout.write('Please, enter your message or press Ctrl + C to exit\n');
@@ -16,6 +16,6 @@ stdin.on('data', data => {
   writableStream.on('error', (e) => console.log(e));
 });
 process.on('SIGINT', () => {
-  stdout.write('Удачи в изучении Node.js!')
+  stdout.write('Good luck finding Node.js!')
   process.exit();
 });
