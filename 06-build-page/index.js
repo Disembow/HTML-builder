@@ -1,67 +1,93 @@
-const path = require('path');
-const fs = require('fs');
+const { join, extname } = require('path');
+const { mkdir, readdir, copyFile, readFile, writeFile } = require('fs/promises');
+const { createReadStream, createWriteStream } = require('fs');
 
-// COPY ASSETS FILES
-const newDirPath = path.join(__dirname, 'project-dist', 'assets');
-async function copyFiles() {
-  let newDir = await fs.promises.mkdir(newDirPath, { recursive: true });
-  try {
-    let filesToCopy = await fs.promises.readdir(path.join(__dirname, 'assets'), { withFileTypes: true });
-    for (let i = 0; i < filesToCopy.length; i++) {
-      if (filesToCopy[i].isDirectory() === true) {
-        newDir = await fs.promises.mkdir(path.join(newDirPath, filesToCopy[i].name), { recursive: true });
-        let newfilesToCopy = await fs.promises.readdir(path.join(__dirname, 'assets', filesToCopy[i].name), { withFileTypes: true });
-        for (let j = 0; j < newfilesToCopy.length; j++) {
-          const copyFile = await fs.promises.copyFile(path.join(__dirname, 'assets', filesToCopy[i].name, newfilesToCopy[j].name), path.join(newDirPath, filesToCopy[i].name, newfilesToCopy[j].name));
-        };
-      };
-    };
-  } catch (err) {
-    console.log((err));
-  };
-};
+function init() {
+  const newDirPath = join(__dirname, 'project-dist', 'assets');
 
-copyFiles();
+  async function copyFiles() {
+    await mkdir(newDirPath, { recursive: true });
 
-// MERGE & WRITE STYLES
+    try {
+      const filesToCopy = await readdir(join(__dirname, 'assets'), {
+        withFileTypes: true,
+      });
 
-async function bundleFiles() {
-  try {
-    let newDir = await fs.promises.mkdir(newDirPath, { recursive: true });
-    const writableStream = fs.createWriteStream(path.join(__dirname, 'project-dist', 'style.css'), {encoding: 'utf-8'});
-    const filesToBundle = await fs.promises.readdir(path.join(__dirname, 'styles'), { withFileTypes: true });
-    filesToBundle.forEach(el => {
-      if (el.name.split('.')[1] === 'css' && el.isFile() === true) {
-        let stream = fs.createReadStream(path.join(__dirname, 'styles', el.name), 'utf-8');
-        stream.on('data', chunk => writableStream.write(chunk));
-        stream.on('error', error => console.error(error.message));
-      };
-    });
-  } catch (err) {
-    console.log((err));
-  };
-};
+      for (let i = 0; i < filesToCopy.length; i++) {
+        if (filesToCopy[i].isDirectory() === true) {
+          newDir = await mkdir(join(newDirPath, filesToCopy[i].name), {
+            recursive: true,
+          });
 
-bundleFiles();
+          const newFilesToCopy = await readdir(join(__dirname, 'assets', filesToCopy[i].name), {
+            withFileTypes: true,
+          });
 
-// CREATE HTML LAYOUT
+          for (let j = 0; j < newFilesToCopy.length; j++) {
+            await copyFile(
+              join(__dirname, 'assets', filesToCopy[i].name, newFilesToCopy[j].name),
+              join(newDirPath, filesToCopy[i].name, newFilesToCopy[j].name)
+            );
+          }
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
-async function createHTML() {
-  try {
-    let init = await fs.promises.readFile(path.join(__dirname, 'template.html'));
-    let initHTML = init.toString();
-    let sections = await fs.promises.readdir(path.join(__dirname, 'components'), {withFileTypes: true});
-    let str = '';
-    for (let i = 0; i < sections.length; i++) {
-      if (sections[i].isFile() && path.extname(sections[i].name) === '.html'){
-        str = await fs.promises.readFile(path.join(__dirname, '/components/', `${sections[i].name}`));
-        initHTML = initHTML.replace(`{{${sections[i].name.slice(0, -5)}}}`, str.toString());
-      };
-    };
-    fs.promises.writeFile(path.join(__dirname, '/project-dist/index.html'), initHTML);
-  } catch (err) {
-    console.log((err));
-  };
-};
+  copyFiles();
 
-createHTML();
+  async function bundleFiles() {
+    try {
+      await mkdir(newDirPath, { recursive: true });
+
+      const writableStream = createWriteStream(join(__dirname, 'project-dist', 'style.css'), {
+        encoding: 'utf-8',
+      });
+
+      const filesToBundle = await readdir(join(__dirname, 'styles'), {
+        withFileTypes: true,
+      });
+
+      filesToBundle.forEach((el) => {
+        if (el.name.split('.')[1] === 'css' && el.isFile() === true) {
+          let stream = createReadStream(join(__dirname, 'styles', el.name), 'utf-8');
+
+          stream.on('data', (chunk) => writableStream.write(chunk));
+          stream.on('error', (error) => console.error(error.message));
+        }
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  bundleFiles();
+
+  async function createHTML() {
+    try {
+      const init = await readFile(join(__dirname, 'template.html'));
+      let initHTML = init.toString();
+      const sections = await readdir(join(__dirname, 'components'), {
+        withFileTypes: true,
+      });
+      let str = '';
+
+      for (let i = 0; i < sections.length; i++) {
+        if (sections[i].isFile() && extname(sections[i].name) === '.html') {
+          str = await readFile(join(__dirname, '/components/', `${sections[i].name}`));
+          initHTML = initHTML.replace(`{{${sections[i].name.slice(0, -5)}}}`, str.toString());
+        }
+      }
+
+      writeFile(join(__dirname, '/project-dist/index.html'), initHTML);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  createHTML();
+}
+
+init();
