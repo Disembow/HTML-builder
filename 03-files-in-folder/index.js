@@ -12,14 +12,13 @@ async function readSecretDir(folderPath) {
       const pathToFile = join(secretFolder, `./${files[i].name}`);
 
       let name = files[i].name.split('.');
-      let size = 0;
 
       stat(pathToFile, (err, stats) => {
         if (err) {
           throw err;
         }
 
-        size = Math.round((stats.size / 1024) * 1000) / 1000;
+        const size = Math.round((stats.size / 1024) * 1000) / 1000;
         stdout.write(`${name[0]} - ${name[1]} - ${size}kb\n`);
       });
     }
