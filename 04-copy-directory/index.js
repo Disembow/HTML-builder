@@ -1,6 +1,7 @@
 const { mkdir, unlink, copyFile } = require('fs');
 const { join } = require('path');
 const { readdir } = require('fs/promises');
+const { stdout } = process;
 
 async function copyFiles() {
   try {
@@ -32,6 +33,8 @@ async function copyFiles() {
         });
       }
     }
+
+    stdout.write('Сopying is done');
   } catch (err) {
     console.log(err);
   }
