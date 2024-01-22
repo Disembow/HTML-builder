@@ -1,36 +1,32 @@
-const { mkdir, unlink, copyFile } = require('fs');
 const { join } = require('path');
-const { readdir } = require('fs/promises');
+const { readdir, rm, mkdir, copyFile } = require('fs/promises');
 const { stdout } = process;
 
-async function copyFiles() {
-  try {
-    const newDir = join(__dirname, 'files-copy');
+const oldDir = join(__dirname, 'files');
+const newDir = join(__dirname, 'files-copy');
 
-    mkdir(newDir, { recursive: true }, (err) => {
+async function copyFiles(oldDir, newDir) {
+  try {
+    await rm(newDir, { recursive: true, force: true });
+
+    await mkdir(newDir, { recursive: true }, (err) => {
       if (err) console.log(err);
     });
 
-    const copies = await readdir(newDir, { withFileTypes: true });
-
-    for (let copy of copies) {
-      unlink(`${newDir}/${copy.name}`, function (err) {
-        if (err) console.log(err);
-      });
-    }
-
-    const item = await readdir(join('04-copy-directory', 'files'), {
+    const items = await readdir(oldDir, {
       withFileTypes: true,
     });
 
-    for (const items of item) {
-      if (items.isFile()) {
-        const pathToInitialFiles = join('04-copy-directory', 'files', `${items.name}`);
-        const pathToTargetDir = join('04-copy-directory', 'files-copy', `${items.name}`);
+    for (const item of items) {
+      const pathToInitialFiles = join(oldDir, `${item.name}`);
+      const pathToTargetDir = join(newDir, `${item.name}`);
 
-        copyFile(pathToInitialFiles, pathToTargetDir, (err) => {
-          if (err) console.log(err);
-        });
+      if (item.isFile()) {
+        await copyFile(pathToInitialFiles, pathToTargetDir);
+      }
+
+      if (item.isDirectory()) {
+        await copyFiles(pathToInitialFiles, pathToTargetDir);
       }
     }
 
@@ -40,4 +36,4 @@ async function copyFiles() {
   }
 }
 
-copyFiles();
+copyFiles(oldDir, newDir);

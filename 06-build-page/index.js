@@ -14,7 +14,7 @@ function init() {
       });
 
       for (let i = 0; i < filesToCopy.length; i++) {
-        if (filesToCopy[i].isDirectory() === true) {
+        if (filesToCopy[i].isDirectory()) {
           await mkdir(join(newDirPath, filesToCopy[i].name), {
             recursive: true,
           });
