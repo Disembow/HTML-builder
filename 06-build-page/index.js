@@ -5,7 +5,7 @@ const { createReadStream, createWriteStream } = require('fs');
 function init() {
   const newDirPath = join(__dirname, 'project-dist', 'assets');
 
-  async function copyFiles() {
+  (async function copyFiles() {
     await mkdir(newDirPath, { recursive: true });
 
     try {
@@ -34,11 +34,9 @@ function init() {
     } catch (err) {
       console.log(err);
     }
-  }
+  })();
 
-  copyFiles();
-
-  async function bundleFiles() {
+  (async function bundleFiles() {
     try {
       await mkdir(newDirPath, { recursive: true });
 
@@ -50,9 +48,9 @@ function init() {
         withFileTypes: true,
       });
 
-      filesToBundle.forEach((el) => {
-        if (el.name.split('.')[1] === 'css' && el.isFile() === true) {
-          let stream = createReadStream(join(__dirname, 'styles', el.name), 'utf-8');
+      filesToBundle.forEach((file) => {
+        if (file.name.split('.')[1] === 'css' && file.isFile() === true) {
+          let stream = createReadStream(join(__dirname, 'styles', file.name), 'utf-8');
 
           stream.on('data', (chunk) => writableStream.write(chunk));
           stream.on('error', (error) => console.error(error.message));
@@ -61,33 +59,31 @@ function init() {
     } catch (err) {
       console.log(err);
     }
-  }
+  })();
 
-  bundleFiles();
-
-  async function createHTML() {
+  (async function createHTML() {
     try {
       const init = await readFile(join(__dirname, 'template.html'));
       let initHTML = init.toString();
+
       const sections = await readdir(join(__dirname, 'components'), {
         withFileTypes: true,
       });
+
       let str = '';
 
       for (let i = 0; i < sections.length; i++) {
         if (sections[i].isFile() && extname(sections[i].name) === '.html') {
-          str = await readFile(join(__dirname, '/components/', `${sections[i].name}`));
+          str = await readFile(join(__dirname, 'components', `${sections[i].name}`));
           initHTML = initHTML.replace(`{{${sections[i].name.slice(0, -5)}}}`, str.toString());
         }
       }
 
-      writeFile(join(__dirname, '/project-dist/index.html'), initHTML);
+      writeFile(join(__dirname, 'project-dist', 'index.html'), initHTML);
     } catch (err) {
       console.log(err);
     }
-  }
-
-  createHTML();
+  })();
 }
 
 init();
