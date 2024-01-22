@@ -1,11 +1,12 @@
 const { join } = require('path');
-const { promises, stat } = require('fs');
+const { stat } = require('fs');
+const { readdir } = require('fs/promises');
 const { stdout } = process;
 
 const secretFolder = join(__dirname, 'secret-folder');
 
 async function readSecretDir(folderPath) {
-  const files = await promises.readdir(folderPath, { withFileTypes: true });
+  const files = await readdir(folderPath, { withFileTypes: true });
 
   for (let i = 0; i < files.length; i++) {
     if (!files[i].isDirectory()) {
