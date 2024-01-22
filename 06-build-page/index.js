@@ -1,9 +1,12 @@
 const { join, extname } = require('path');
-const { mkdir, readdir, copyFile, readFile, writeFile } = require('fs/promises');
+const { mkdir, readdir, copyFile, readFile, writeFile, rm } = require('fs/promises');
 const { createReadStream, createWriteStream } = require('fs');
 
-function init() {
-  const newDirPath = join(__dirname, 'project-dist', 'assets');
+async function init() {
+  const targetFolder = join(__dirname, 'project-dist');
+  await rm(targetFolder, { recursive: true, force: true });
+
+  const newDirPath = join(targetFolder, 'assets');
 
   (async function copyFiles() {
     await mkdir(newDirPath, { recursive: true });

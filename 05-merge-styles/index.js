@@ -1,12 +1,10 @@
 const { join } = require('path');
 const { createWriteStream, createReadStream } = require('fs');
-const { readdir, rm } = require('fs/promises');
+const { readdir } = require('fs/promises');
 
 async function bundleFiles() {
   try {
     const pathToTargetCssFile = join(__dirname, 'project-dist', 'bundle.css');
-
-    await rm(pathToTargetCssFile, { recursive: true, force: true });
 
     const writableStream = createWriteStream(pathToTargetCssFile, {
       encoding: 'utf-8',
