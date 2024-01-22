@@ -10,9 +10,7 @@ async function readSecretDir(folderPath) {
 
   for (let i = 0; i < files.length; i++) {
     if (!files[i].isDirectory()) {
-      const pathToFile = join(secretFolder, `./${files[i].name}`);
-
-      let name = files[i].name.split('.');
+      const pathToFile = join(secretFolder, `${files[i].name}`);
 
       stat(pathToFile, (err, stats) => {
         if (err) {
@@ -20,7 +18,9 @@ async function readSecretDir(folderPath) {
         }
 
         const size = Math.round((stats.size / 1024) * 1000) / 1000;
-        stdout.write(`${name[0]} - ${name[1]} - ${size}kb\n`);
+
+        const [filename, ext] = files[i].name.split('.');
+        stdout.write(`${filename} - ${ext} - ${size}kb\n`);
       });
     }
   }
