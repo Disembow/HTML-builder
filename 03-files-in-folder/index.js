@@ -1,4 +1,4 @@
-const { join } = require('path');
+const { join, parse, extname } = require('path');
 const { stat } = require('fs');
 const { readdir } = require('fs/promises');
 const { stdout } = process;
@@ -19,7 +19,9 @@ async function readSecretDir(folderPath) {
 
         const size = Math.round((stats.size / 1024) * 1000) / 1000;
 
-        const [filename, ext] = files[i].name.split('.');
+        const filename = parse(pathToFile).name;
+        const ext = extname(pathToFile).slice(1);
+
         stdout.write(`${filename} - ${ext} - ${size}kb\n`);
       });
     }
